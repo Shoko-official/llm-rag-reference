@@ -29,6 +29,7 @@ REQUIRED_FILES = [
     "scripts/generate_mock_data.py",
     "tests/README.md",
     "tests/test_schemas.py",
+    "tests/test_chunker.py",
 ]
 
 REQUIRED_DIRECTORIES = [
