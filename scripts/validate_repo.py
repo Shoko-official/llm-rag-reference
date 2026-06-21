@@ -20,7 +20,10 @@ REQUIRED_FILES = [
     "docs/README.md",
     "figures/README.md",
     "rag/README.md",
+    "rag/schemas/chunk.json",
+    "rag/schemas/index.json",
     "scripts/validate_repo.py",
+    "scripts/validate_rag.py",
     "tests/README.md",
 ]
 
@@ -118,6 +121,11 @@ def lint_text() -> None:
 def run_validate() -> None:
     validate_required_paths()
     validate_foundation_markers()
+    # Validate RAG index files
+    import subprocess
+    res = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_rag.py")], capture_output=True, text=True)
+    if res.returncode != 0:
+        fail(f"RAG validation failed:\n{res.stderr}\n{res.stdout}")
 
 
 def run_lint() -> None:
