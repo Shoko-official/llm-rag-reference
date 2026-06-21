@@ -27,6 +27,7 @@ REQUIRED_FILES = [
     "scripts/validate_rag.py",
     "scripts/generate_mock_data.py",
     "tests/README.md",
+    "tests/test_schemas.py",
 ]
 
 REQUIRED_DIRECTORIES = [
