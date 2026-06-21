@@ -10,3 +10,7 @@ lint:
 
 test:
 	$(PYTHON) scripts/validate_repo.py test
+
+search:
+	$(PYTHON) scripts/query_search.py --query "main" --output table
+
