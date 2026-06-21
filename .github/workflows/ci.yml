@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate
+        run: python scripts/validate_repo.py validate
+
+      - name: Lint
+        run: python scripts/validate_repo.py lint
+
+      - name: Test
+        run: python scripts/validate_repo.py test
