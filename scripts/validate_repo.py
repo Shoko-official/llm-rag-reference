@@ -20,10 +20,12 @@ REQUIRED_FILES = [
     "docs/README.md",
     "figures/README.md",
     "rag/README.md",
+    "rag/mock_index.json",
     "rag/schemas/chunk.json",
     "rag/schemas/index.json",
     "scripts/validate_repo.py",
     "scripts/validate_rag.py",
+    "scripts/generate_mock_data.py",
     "tests/README.md",
 ]
 
