@@ -17,7 +17,9 @@ REQUIRED_FILES = [
     ".github/ISSUE_TEMPLATE/rag_task.md",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/workflows/ci.yml",
+    ".github/workflows/cron_index_validation.yml",
     "docs/README.md",
+    "docs/retrieval-validation.md",
     "figures/README.md",
     "rag/README.md",
     "rag/chunker.py",
@@ -28,6 +30,8 @@ REQUIRED_FILES = [
     "rag/search.py",
     "scripts/validate_repo.py",
     "scripts/validate_rag.py",
+    "scripts/validate_alignment.py",
+    "scripts/validate_retrieval.py",
     "scripts/generate_mock_data.py",
     "scripts/chunk_repo.py",
     "scripts/query_search.py",
@@ -36,6 +40,7 @@ REQUIRED_FILES = [
     "tests/test_chunker.py",
     "tests/test_cli.py",
     "tests/test_search.py",
+    "tests/test_validation_scripts.py",
 ]
 
 REQUIRED_DIRECTORIES = [
@@ -137,6 +142,14 @@ def run_validate() -> None:
     res = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_rag.py")], capture_output=True, text=True)
     if res.returncode != 0:
         fail(f"RAG validation failed:\n{res.stderr}\n{res.stdout}")
+    # Validate alignment
+    res_align = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_alignment.py")], capture_output=True, text=True)
+    if res_align.returncode != 0:
+        fail(f"Alignment validation failed:\n{res_align.stderr}\n{res_align.stdout}")
+    # Validate retrieval accuracy
+    res_retr = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_retrieval.py")], capture_output=True, text=True)
+    if res_retr.returncode != 0:
+        fail(f"Retrieval validation failed:\n{res_retr.stderr}\n{res_retr.stdout}")
     # Validate CLI help works
     res_help = subprocess.run([sys.executable, str(ROOT / "scripts" / "query_search.py"), "--help"], capture_output=True, text=True)
     if res_help.returncode != 0:
