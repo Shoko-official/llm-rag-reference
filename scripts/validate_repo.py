@@ -25,14 +25,17 @@ REQUIRED_FILES = [
     "rag/mock_index.json",
     "rag/schemas/chunk.json",
     "rag/schemas/index.json",
+    "rag/search.py",
     "scripts/validate_repo.py",
     "scripts/validate_rag.py",
     "scripts/generate_mock_data.py",
     "scripts/chunk_repo.py",
+    "scripts/query_search.py",
     "tests/README.md",
     "tests/test_schemas.py",
     "tests/test_chunker.py",
     "tests/test_cli.py",
+    "tests/test_search.py",
 ]
 
 REQUIRED_DIRECTORIES = [
@@ -134,6 +137,10 @@ def run_validate() -> None:
     res = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_rag.py")], capture_output=True, text=True)
     if res.returncode != 0:
         fail(f"RAG validation failed:\n{res.stderr}\n{res.stdout}")
+    # Validate CLI help works
+    res_help = subprocess.run([sys.executable, str(ROOT / "scripts" / "query_search.py"), "--help"], capture_output=True, text=True)
+    if res_help.returncode != 0:
+        fail(f"query_search.py CLI verification failed:\n{res_help.stderr}\n{res_help.stdout}")
 
 
 def run_lint() -> None:
