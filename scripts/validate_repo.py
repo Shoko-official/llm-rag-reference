@@ -20,6 +20,7 @@ REQUIRED_FILES = [
     "docs/README.md",
     "figures/README.md",
     "rag/README.md",
+    "rag/chunker.py",
     "rag/mock_index.json",
     "rag/schemas/chunk.json",
     "rag/schemas/index.json",
