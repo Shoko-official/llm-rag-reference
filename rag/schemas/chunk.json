@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ChunkSchema",
+  "description": "Schema for a single document or code chunk in RAG.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the chunk (e.g., hash or file-line suffix)."
+    },
+    "filepath": {
+      "type": "string",
+      "description": "Relative path of the source file."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["class", "function", "module", "block", "text"],
+      "description": "The structural type of the chunked content."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional name of the code element (e.g., class name, function name)."
+    },
+    "start_line": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "1-based starting line number in the source file."
+    },
+    "end_line": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "1-based ending line number in the source file."
+    },
+    "content": {
+      "type": "string",
+      "description": "The raw text or code content of the chunk."
+    },
+    "tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Estimated token count of the content."
+    }
+  },
+  "required": ["id", "filepath", "type", "content"],
+  "additionalProperties": false
+}
