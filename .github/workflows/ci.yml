@@ -19,6 +19,9 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install dependencies
+        run: pip install jsonschema
+
       - name: Validate
         run: python scripts/validate_repo.py validate
 
