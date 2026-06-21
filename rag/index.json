@@ -1,0 +1,77 @@
+{
+  "repository": "Shoko-official/llm-rag-reference",
+  "commit": "f68a7f4c7c878009ca6298d2d73eb0e604c02529",
+  "generated_at": "2026-06-21T18:13:28.772317Z",
+  "chunks": [
+    {
+      "id": "chunk_11c13215_estimate_tokens",
+      "filepath": "rag/chunker.py",
+      "type": "function",
+      "name": "estimate_tokens",
+      "start_line": 7,
+      "end_line": 9,
+      "content": "def estimate_tokens(text: str) -> int:\n    # A simple token estimator: words + punctuation approximation\n    return len(text.split()) + (len(text) - len(text.replace(\" \", \"\"))) // 2",
+      "tokens": 38
+    },
+    {
+      "id": "chunk_c5ff7063_ASTChunker",
+      "filepath": "rag/chunker.py",
+      "type": "class",
+      "name": "ASTChunker",
+      "start_line": 11,
+      "end_line": 87,
+      "content": "class ASTChunker:\n    def __init__(self, filepath: str, source_code: str):\n        self.filepath = filepath\n        self.source_code = source_code\n        self.lines = source_code.splitlines()\n\n    def get_node_source(self, start_line: int, end_line: int) -> str:\n        # 1-based indexing for lines\n        segment = self.lines[start_line - 1 : end_line]\n        return \"\\n\".join(segment)\n\n    def generate_chunk_id(self, node_type: str, name: str, start_line: int) -> str:\n        # Create a stable, unique ID\n        norm_path = self.filepath.replace(\"\\\\\", \"/\")\n        raw_id = f\"{norm_path}:{node_type}:{name}:{start_line}\"\n        sha = hashlib.sha256(raw_id.encode(\"utf-8\")).hexdigest()[:8]\n        return f\"chunk_{sha}_{name}\"\n\n    def chunk(self) -> list[dict]:\n        try:\n            tree = ast.parse(self.source_code)\n        except SyntaxError:\n            # Fallback to whole file as a module chunk if parsing fails\n            return [self.make_fallback_chunk()]\n\n        chunks = []\n        for node in ast.walk(tree):\n            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):\n                node_type = \"function\"\n                name = node.name\n            elif isinstance(node, ast.ClassDef):\n                node_type = \"class\"\n                name = node.name\n            else:\n                continue\n\n            # Ensure lineno attributes are present\n            start_line = getattr(node, \"lineno\", None)\n            end_line = getattr(node, \"end_lineno\", None)\n            if start_line is None or end_line is None:\n                continue\n\n            content = self.get_node_source(start_line, end_line)\n            chunk_id = self.generate_chunk_id(node_type, name, start_line)\n            tokens = estimate_tokens(content)\n\n            chunks.append({\n                \"id\": chunk_id,\n                \"filepath\": self.filepath,\n                \"type\": node_type,\n                \"name\": name,\n                \"start_line\": start_line,\n                \"end_line\": end_line,\n                \"content\": content,\n                \"tokens\": tokens\n            })\n\n        if not chunks:\n            # If no functions or classes, return the whole file\n            return [self.make_fallback_chunk()]\n\n        return chunks\n\n    def make_fallback_chunk(self) -> dict:\n        tokens = estimate_tokens(self.source_code)\n        norm_path = self.filepath.replace(\"\\\\\", \"/\")\n        sha = hashlib.sha256(f\"{norm_path}:module\".encode(\"utf-8\")).hexdigest()[:8]\n        return {\n            \"id\": f\"chunk_{sha}_module\",\n            \"filepath\": self.filepath,\n            \"type\": \"module\",\n            \"name\": Path(self.filepath).name,\n            \"start_line\": 1,\n            \"end_line\": len(self.lines) if self.lines else 1,\n            \"content\": self.source_code,\n            \"tokens\": tokens\n        }",
+      "tokens": 668
+    },
+    {
+      "id": "chunk_cef47034___init__",
+      "filepath": "rag/chunker.py",
+      "type": "function",
+      "name": "__init__",
+      "start_line": 12,
+      "end_line": 15,
+      "content": "    def __init__(self, filepath: str, source_code: str):\n        self.filepath = filepath\n        self.source_code = source_code\n        self.lines = source_code.splitlines()",
+      "tokens": 34
+    },
+    {
+      "id": "chunk_cb07b241_get_node_source",
+      "filepath": "rag/chunker.py",
+      "type": "function",
+      "name": "get_node_source",
+      "start_line": 17,
+      "end_line": 20,
+      "content": "    def get_node_source(self, start_line: int, end_line: int) -> str:\n        # 1-based indexing for lines\n        segment = self.lines[start_line - 1 : end_line]\n        return \"\\n\".join(segment)",
+      "tokens": 45
+    },
+    {
+      "id": "chunk_39239a80_generate_chunk_id",
+      "filepath": "rag/chunker.py",
+      "type": "function",
+      "name": "generate_chunk_id",
+      "start_line": 22,
+      "end_line": 27,
+      "content": "    def generate_chunk_id(self, node_type: str, name: str, start_line: int) -> str:\n        # Create a stable, unique ID\n        norm_path = self.filepath.replace(\"\\\\\", \"/\")\n        raw_id = f\"{norm_path}:{node_type}:{name}:{start_line}\"\n        sha = hashlib.sha256(raw_id.encode(\"utf-8\")).hexdigest()[:8]\n        return f\"chunk_{sha}_{name}\"",
+      "tokens": 61
+    },
+    {
+      "id": "chunk_75a248a5_chunk",
+      "filepath": "rag/chunker.py",
+      "type": "function",
+      "name": "chunk",
+      "start_line": 29,
+      "end_line": 72,
+      "content": "    def chunk(self) -> list[dict]:\n        try:\n            tree = ast.parse(self.source_code)\n        except SyntaxError:\n            # Fallback to whole file as a module chunk if parsing fails\n            return [self.make_fallback_chunk()]\n\n        chunks = []\n        for node in ast.walk(tree):\n            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):\n                node_type = \"function\"\n                name = node.name\n            elif isinstance(node, ast.ClassDef):\n                node_type = \"class\"\n                name = node.name\n            else:\n                continue\n\n            # Ensure lineno attributes are present\n            start_line = getattr(node, \"lineno\", None)\n            end_line = getattr(node, \"end_lineno\", None)\n            if start_line is None or end_line is None:\n                continue\n\n            content = self.get_node_source(start_line, end_line)\n            chunk_id = self.generate_chunk_id(node_type, name, start_line)\n            tokens = estimate_tokens(content)\n\n            chunks.append({\n                \"id\": chunk_id,\n                \"filepath\": self.filepath,\n                \"type\": node_type,\n                \"name\": name,\n                \"start_line\": start_line,\n                \"end_line\": end_line,\n                \"content\": content,\n                \"tokens\": tokens\n            })\n\n        if not chunks:\n            # If no functions or classes, return the whole file\n            return [self.make_fallback_chunk()]\n\n        return chunks",
+      "tokens": 407
+    },
+    {
+      "id": "chunk_5caeb02c_make_fallback_chunk",
+      "filepath": "rag/chunker.py",
+      "type": "function",
+      "name": "make_fallback_chunk",
+      "start_line": 74,
+      "end_line": 87,
+      "content": "    def make_fallback_chunk(self) -> dict:\n        tokens = estimate_tokens(self.source_code)\n        norm_path = self.filepath.replace(\"\\\\\", \"/\")\n        sha = hashlib.sha256(f\"{norm_path}:module\".encode(\"utf-8\")).hexdigest()[:8]\n        return {\n            \"id\": f\"chunk_{sha}_module\",\n            \"filepath\": self.filepath,\n            \"type\": \"module\",\n            \"name\": Path(self.filepath).name,\n            \"start_line\": 1,\n            \"end_line\": len(self.lines) if self.lines else 1,\n            \"content\": self.source_code,\n            \"tokens\": tokens\n        }",
+      "tokens": 118
+    }
+  ]
+}
