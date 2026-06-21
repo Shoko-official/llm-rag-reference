@@ -1,0 +1,57 @@
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+def generate_mock_data(output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    mock_index = {
+        "repository": "Shoko-official/llm-rag-reference",
+        "commit": "ec2fa6a9d9c8de04ef6f24b00babb12ec1e23363",
+        "generated_at": "2026-06-21T18:00:00Z",
+        "chunks": [
+            {
+                "id": "chunk_001_main_func",
+                "filepath": "scripts/validate_rag.py",
+                "type": "function",
+                "name": "main",
+                "start_line": 34,
+                "end_line": 53,
+                "content": "def main() -> None:\n    parser = argparse.ArgumentParser(description=\"Validate RAG index files against schemas\")\n    parser.add_argument(\"--index\", type=str, help=\"Path to a RAG index JSON file to validate\")\n    parser.add_argument(\"--schema\", type=str, help=\"Path to the RAG index JSON schema\")",
+                "tokens": 45
+            },
+            {
+                "id": "chunk_002_fail_func",
+                "filepath": "scripts/validate_rag.py",
+                "type": "function",
+                "name": "fail",
+                "start_line": 11,
+                "end_line": 13,
+                "content": "def fail(message: str) -> None:\n    print(f\"Error: {message}\", file=sys.stderr)\n    sys.exit(1)",
+                "tokens": 15
+            }
+        ]
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(mock_index, f, indent=2)
+
+    print(f"Generated mock RAG index file: {output_path}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate synthetic RAG index data for testing")
+    parser.add_argument("--output", type=str, help="Destination path for the mock RAG index JSON")
+    
+    args = parser.parse_args()
+    
+    script_dir = Path(__file__).resolve().parent
+    root_dir = script_dir.parent
+    
+    output_path = Path(args.output) if args.output else root_dir / "rag" / "mock_index.json"
+    
+    generate_mock_data(output_path)
+
+if __name__ == "__main__":
+    main()
