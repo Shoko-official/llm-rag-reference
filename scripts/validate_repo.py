@@ -32,6 +32,7 @@ REQUIRED_FILES = [
     "tests/README.md",
     "tests/test_schemas.py",
     "tests/test_chunker.py",
+    "tests/test_cli.py",
 ]
 
 REQUIRED_DIRECTORIES = [
