@@ -138,5 +138,33 @@ class TestHybridSearcher(unittest.TestCase):
             except OSError:
                 pass
 
+    def test_telemetry_spans(self) -> None:
+        self.searcher.reset_trace()
+        self.assertEqual(len(self.searcher.last_spans), 0)
+        
+        results = self.searcher.hybrid_search("Attention", k=2)
+        results = self.searcher.rerank("Attention", results, k=2)
+        
+        spans = self.searcher.last_spans
+        self.assertEqual(len(spans), 2)
+        
+        hybrid_span = next(s for s in spans if s["name"] == "hybrid_search")
+        rerank_span = next(s for s in spans if s["name"] == "rerank_chunks")
+        
+        # Verify required telemetry fields
+        for span in (hybrid_span, rerank_span):
+            self.assertIn("span_id", span)
+            self.assertIn("trace_id", span)
+            self.assertIn("start_time", span)
+            self.assertIn("end_time", span)
+            self.assertIn("duration_ms", span)
+            self.assertEqual(span["service_name"], "rag")
+            self.assertEqual(span["status"], "ok")
+            
+        # Context propagation
+        self.assertEqual(hybrid_span["trace_id"], rerank_span["trace_id"])
+        self.assertEqual(rerank_span["parent_span_id"], hybrid_span["span_id"])
+        self.assertEqual(hybrid_span["parent_span_id"], "N/A")
+
 if __name__ == "__main__":
     unittest.main()

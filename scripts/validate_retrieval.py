@@ -62,19 +62,24 @@ def fail(message: str) -> None:
     print(f"Error: {message}", file=sys.stderr)
     sys.exit(1)
 
-def run_evaluation(searcher: HybridSearcher, k: int = 5) -> tuple[float, float, list[dict]]:
+def run_evaluation(searcher: HybridSearcher, k: int = 5) -> tuple[float, float, list[dict], list[dict]]:
     mrr_sum = 0.0
     recall_sum = 0.0
     details = []
+    all_spans = []
 
     for case in EVAL_CASES:
         query = case["query"]
         expected_name = case["expected_name"]
         expected_filepath = case["expected_filepath"]
 
+        searcher.reset_trace()
+
         # Run hybrid search and then rerank
         results = searcher.hybrid_search(query, k=k)
         results = searcher.rerank(query, results, k=k)
+        
+        all_spans.extend(searcher.last_spans)
 
         # Find the rank of the expected target
         found_rank = None
@@ -107,7 +112,7 @@ def run_evaluation(searcher: HybridSearcher, k: int = 5) -> tuple[float, float, 
     avg_mrr = mrr_sum / num_cases if num_cases > 0 else 0.0
     avg_recall = recall_sum / num_cases if num_cases > 0 else 0.0
 
-    return avg_mrr, avg_recall, details
+    return avg_mrr, avg_recall, details, all_spans
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate RAG retrieval accuracy")
@@ -136,7 +141,7 @@ def main() -> None:
     print(f"Loaded index from: {index_path}")
     print(f"Evaluating retrieval accuracy over {len(EVAL_CASES)} cases...")
 
-    avg_mrr, avg_recall, details = run_evaluation(searcher, k=args.k)
+    avg_mrr, avg_recall, details, all_spans = run_evaluation(searcher, k=args.k)
 
     print("\n--- Evaluation Results ---")
     print(f"Recall@{args.k}: {avg_recall:.4f} (Required: >= {args.min_recall:.2f})")
@@ -150,6 +155,15 @@ def main() -> None:
     if avg_mrr < args.min_mrr:
         print(f"Validation FAILED: MRR ({avg_mrr:.4f}) is below threshold {args.min_mrr:.2f}", file=sys.stderr)
         failed = True
+
+    # Export tracing spans to rag/traces.json
+    traces_path = ROOT / "rag" / "traces.json"
+    try:
+        with open(traces_path, "w", encoding="utf-8") as f:
+            json.dump(all_spans, f, indent=2)
+        print(f"Exported tracing spans to {traces_path.relative_to(ROOT)}")
+    except Exception as e:
+        print(f"Warning: Failed to export tracing spans: {e}", file=sys.stderr)
 
     if failed:
         print("\nFailed cases detail:")
