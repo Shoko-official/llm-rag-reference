@@ -42,11 +42,11 @@ def main() -> None:
         validate_index_file(Path(args.index), schema_path)
         print(f"Successfully validated index file: {args.index}")
     else:
-        # Find all JSON files in rag/ excluding schemas/
+        # Find all JSON files in rag/ excluding schemas/ and references.json
         rag_dir = ROOT / "rag"
         found = False
         for path in rag_dir.rglob("*.json"):
-            if "schemas" in path.parts:
+            if "schemas" in path.parts or path.name == "references.json":
                 continue
             validate_index_file(path, schema_path)
             print(f"Successfully validated index file: {path.relative_to(ROOT)}")

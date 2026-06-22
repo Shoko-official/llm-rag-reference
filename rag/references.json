@@ -1,0 +1,16 @@
+[
+  {
+    "citation_key": "source-attention-2017",
+    "ledger_source_id": "source-placeholder-alpha-method-2026",
+    "ledger_claim_id": "claim-alpha-neutral-performance",
+    "paper_section_target": "sections/introduction.md",
+    "readiness_state": "ready_for_bibliography"
+  },
+  {
+    "citation_key": "source-dapper-2010",
+    "ledger_source_id": "source-placeholder-gamma-framework-2026",
+    "ledger_claim_id": "claim-gamma-integration-flexibility",
+    "paper_section_target": "sections/observability.md",
+    "readiness_state": "ready_for_bibliography"
+  }
+]
