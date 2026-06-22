@@ -20,11 +20,13 @@ REQUIRED_FILES = [
     ".github/workflows/cron_index_validation.yml",
     "docs/README.md",
     "docs/retrieval-validation.md",
+    "docs/reference-guidelines.md",
     "figures/README.md",
     "rag/README.md",
     "rag/chunker.py",
     "rag/index.json",
     "rag/mock_index.json",
+    "rag/references.json",
     "rag/schemas/chunk.json",
     "rag/schemas/index.json",
     "rag/search.py",
@@ -32,6 +34,7 @@ REQUIRED_FILES = [
     "scripts/validate_rag.py",
     "scripts/validate_alignment.py",
     "scripts/validate_retrieval.py",
+    "scripts/validate_references.py",
     "scripts/generate_mock_data.py",
     "scripts/chunk_repo.py",
     "scripts/query_search.py",
@@ -41,6 +44,7 @@ REQUIRED_FILES = [
     "tests/test_cli.py",
     "tests/test_search.py",
     "tests/test_validation_scripts.py",
+    "tests/test_references.py",
 ]
 
 REQUIRED_DIRECTORIES = [
@@ -150,6 +154,10 @@ def run_validate() -> None:
     res_retr = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_retrieval.py")], capture_output=True, text=True)
     if res_retr.returncode != 0:
         fail(f"Retrieval validation failed:\n{res_retr.stderr}\n{res_retr.stdout}")
+    # Validate references and cross-repo citations
+    res_refs = subprocess.run([sys.executable, str(ROOT / "scripts" / "validate_references.py")], capture_output=True, text=True)
+    if res_refs.returncode != 0:
+        fail(f"References validation failed:\n{res_refs.stderr}\n{res_refs.stdout}")
     # Validate CLI help works
     res_help = subprocess.run([sys.executable, str(ROOT / "scripts" / "query_search.py"), "--help"], capture_output=True, text=True)
     if res_help.returncode != 0:
