@@ -1,7 +1,7 @@
 {
   "repository": "Shoko-official/llm-rag-reference",
-  "commit": "77edc650f23387d673c70482bb3e58a39ef86379",
-  "generated_at": "2026-06-21T21:06:19.654223Z",
+  "commit": "027e5a02f1cf6ac9f90f193e4956f541bf573828",
+  "generated_at": "2026-06-22T18:36:16.745622Z",
   "chunks": [
     {
       "id": "chunk_11c13215_estimate_tokens",
@@ -74,122 +74,132 @@
       "tokens": 118
     },
     {
-      "id": "chunk_3962274b_tokenize",
+      "id": "chunk_7b2b9e04_tokenize",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "tokenize",
-      "start_line": 9,
-      "end_line": 10,
+      "start_line": 11,
+      "end_line": 12,
       "content": "def tokenize(text: str) -> list[str]:\n    return re.findall(r\"\\w+\", text.lower())",
       "tokens": 13
     },
     {
-      "id": "chunk_98079b66_get_char_ngrams",
+      "id": "chunk_ad16f3dc_get_char_ngrams",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "get_char_ngrams",
-      "start_line": 12,
-      "end_line": 17,
+      "start_line": 14,
+      "end_line": 19,
       "content": "def get_char_ngrams(text: str, n: int = 3) -> Counter:\n    text = text.lower()\n    # strip whitespace/newlines to avoid matching layout\n    text = \"\".join(text.split())\n    ngrams = [text[i:i+n] for i in range(len(text) - n + 1)]\n    return Counter(ngrams)",
       "tokens": 59
     },
     {
-      "id": "chunk_1f37032b_cosine_similarity",
+      "id": "chunk_9480df12_cosine_similarity",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "cosine_similarity",
-      "start_line": 19,
-      "end_line": 27,
+      "start_line": 21,
+      "end_line": 29,
       "content": "def cosine_similarity(c1: Counter, c2: Counter) -> float:\n    intersection = set(c1.keys()) & set(c2.keys())\n    numerator = sum(c1[x] * c2[x] for x in intersection)\n    sum1 = sum(c1[x]**2 for x in c1.keys())\n    sum2 = sum(c2[x]**2 for x in c2.keys())\n    denominator = math.sqrt(sum1) * math.sqrt(sum2)\n    if not denominator:\n        return 0.0\n    return numerator / denominator",
       "tokens": 87
     },
     {
-      "id": "chunk_d36fc613_HybridSearcher",
+      "id": "chunk_007dc896_HybridSearcher",
       "filepath": "rag/search.py",
       "type": "class",
       "name": "HybridSearcher",
-      "start_line": 29,
-      "end_line": 190,
-      "content": "class HybridSearcher:\n    def __init__(self, index_data: dict | str | Path):\n        if isinstance(index_data, (str, Path)):\n            with open(index_data, \"r\", encoding=\"utf-8\") as f:\n                self.index_data = json.load(f)\n        else:\n            self.index_data = index_data\n        \n        self.chunks = self.index_data.get(\"chunks\", [])\n        self.N = len(self.chunks)\n        self._prepare_sparse()\n        self._prepare_dense()\n\n    def _prepare_sparse(self) -> None:\n        self.df = Counter()\n        self.chunk_tfs = []\n        \n        for chunk in self.chunks:\n            content = chunk.get(\"content\", \"\")\n            tokens = tokenize(content)\n            token_counts = Counter(tokens)\n            \n            total_tokens = len(tokens)\n            tf = {}\n            for token, count in token_counts.items():\n                tf[token] = count / total_tokens if total_tokens > 0 else 0.0\n                self.df[token] += 1\n            self.chunk_tfs.append(tf)\n            \n        self.idf = {}\n        for token, df_val in self.df.items():\n            self.idf[token] = math.log(1.0 + self.N / df_val)\n\n    def _prepare_dense(self) -> None:\n        self.chunk_ngrams = []\n        for chunk in self.chunks:\n            content = chunk.get(\"content\", \"\")\n            self.chunk_ngrams.append(get_char_ngrams(content))\n\n    def sparse_search(self, query: str, k: int = 5) -> list[dict]:\n        query_tokens = tokenize(query)\n        if not query_tokens:\n            return [{**chunk, \"score\": 0.0} for chunk in self.chunks[:k]]\n            \n        scored_chunks = []\n        for idx, chunk in enumerate(self.chunks):\n            tf = self.chunk_tfs[idx]\n            score = sum(tf.get(token, 0.0) * self.idf.get(token, 0.0) for token in query_tokens)\n            scored_chunks.append((score, chunk))\n            \n        scored_chunks.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in scored_chunks[:k]:\n            results.append({**chunk, \"score\": score})\n        return results\n\n    def dense_search(self, query: str, k: int = 5) -> list[dict]:\n        query_ngrams = get_char_ngrams(query)\n        if not query_ngrams:\n            return [{**chunk, \"score\": 0.0} for chunk in self.chunks[:k]]\n            \n        scored_chunks = []\n        for idx, chunk in enumerate(self.chunks):\n            chunk_ng = self.chunk_ngrams[idx]\n            score = cosine_similarity(query_ngrams, chunk_ng)\n            scored_chunks.append((score, chunk))\n            \n        scored_chunks.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in scored_chunks[:k]:\n            results.append({**chunk, \"score\": score})\n        return results\n\n    def hybrid_search(self, query: str, k: int = 5, alpha: float = 0.5, method: str = \"linear\") -> list[dict]:\n        if not self.chunks:\n            return []\n            \n        if method == \"linear\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_scores = {r[\"id\"]: r[\"score\"] for r in sparse_res}\n            dense_scores = {r[\"id\"]: r[\"score\"] for r in dense_res}\n            \n            s_min = min(sparse_scores.values()) if sparse_scores else 0.0\n            s_max = max(sparse_scores.values()) if sparse_scores else 0.0\n            d_min = min(dense_scores.values()) if dense_scores else 0.0\n            d_max = max(dense_scores.values()) if dense_scores else 0.0\n            \n            def norm(val, v_min, v_max):\n                if v_max > v_min:\n                    return (val - v_min) / (v_max - v_min)\n                return 0.0\n                \n            combined = []\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_score = norm(sparse_scores.get(c_id, 0.0), s_min, s_max)\n                d_score = norm(dense_scores.get(c_id, 0.0), d_min, d_max)\n                score = alpha * s_score + (1.0 - alpha) * d_score\n                combined.append((score, chunk))\n        elif method == \"rrf\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(sparse_res)}\n            dense_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(dense_res)}\n            \n            combined = []\n            constant = 60.0\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_rank = sparse_ranks.get(c_id)\n                d_rank = dense_ranks.get(c_id)\n                \n                s_rrf = 1.0 / (constant + s_rank) if s_rank is not None else 0.0\n                d_rrf = 1.0 / (constant + d_rank) if d_rank is not None else 0.0\n                score = s_rrf + d_rrf\n                combined.append((score, chunk))\n        else:\n            raise ValueError(f\"Unknown fusion method: {method}\")\n            \n        combined.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in combined[:k]:\n            results.append({**chunk, \"score\": score})\n        return results\n\n    def rerank(\n        self,\n        query: str,\n        chunks: list[dict],\n        k: int = 5,\n        name_boost: float = 0.2,\n        type_boosts: dict[str, float] | None = None\n    ) -> list[dict]:\n        if type_boosts is None:\n            type_boosts = {\"class\": 0.1, \"function\": 0.05}\n            \n        query_tokens = tokenize(query)\n        boosted_chunks = []\n        \n        for chunk in chunks:\n            base_score = chunk.get(\"score\", 0.0)\n            boost = 0.0\n            \n            chunk_name = chunk.get(\"name\", \"\")\n            if chunk_name:\n                chunk_name_lower = chunk_name.lower()\n                for token in query_tokens:\n                    if len(token) >= 3 and token == chunk_name_lower:\n                        boost += name_boost\n                        break\n                        \n            chunk_type = chunk.get(\"type\", \"\")\n            boost += type_boosts.get(chunk_type, 0.0)\n            \n            new_score = base_score + boost\n            boosted_chunks.append({**chunk, \"score\": new_score})\n            \n        boosted_chunks.sort(key=lambda x: x[\"score\"], reverse=True)\n        return boosted_chunks[:k]",
-      "tokens": 1668
+      "start_line": 31,
+      "end_line": 255,
+      "content": "class HybridSearcher:\n    def __init__(self, index_data: dict | str | Path):\n        if isinstance(index_data, (str, Path)):\n            with open(index_data, \"r\", encoding=\"utf-8\") as f:\n                self.index_data = json.load(f)\n        else:\n            self.index_data = index_data\n        \n        self.chunks = self.index_data.get(\"chunks\", [])\n        self.N = len(self.chunks)\n        self._prepare_sparse()\n        self._prepare_dense()\n        self.last_spans: list[dict] = []\n        self.current_trace_id: str | None = None\n\n    def reset_trace(self) -> None:\n        self.current_trace_id = None\n        self.last_spans = []\n\n    def _prepare_sparse(self) -> None:\n        self.df = Counter()\n        self.chunk_tfs = []\n        \n        for chunk in self.chunks:\n            content = chunk.get(\"content\", \"\")\n            tokens = tokenize(content)\n            token_counts = Counter(tokens)\n            \n            total_tokens = len(tokens)\n            tf = {}\n            for token, count in token_counts.items():\n                tf[token] = count / total_tokens if total_tokens > 0 else 0.0\n                self.df[token] += 1\n            self.chunk_tfs.append(tf)\n            \n        self.idf = {}\n        for token, df_val in self.df.items():\n            self.idf[token] = math.log(1.0 + self.N / df_val)\n\n    def _prepare_dense(self) -> None:\n        self.chunk_ngrams = []\n        for chunk in self.chunks:\n            content = chunk.get(\"content\", \"\")\n            self.chunk_ngrams.append(get_char_ngrams(content))\n\n    def sparse_search(self, query: str, k: int = 5) -> list[dict]:\n        query_tokens = tokenize(query)\n        if not query_tokens:\n            return [{**chunk, \"score\": 0.0} for chunk in self.chunks[:k]]\n            \n        scored_chunks = []\n        for idx, chunk in enumerate(self.chunks):\n            tf = self.chunk_tfs[idx]\n            score = sum(tf.get(token, 0.0) * self.idf.get(token, 0.0) for token in query_tokens)\n            scored_chunks.append((score, chunk))\n            \n        scored_chunks.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in scored_chunks[:k]:\n            results.append({**chunk, \"score\": score})\n        return results\n\n    def dense_search(self, query: str, k: int = 5) -> list[dict]:\n        query_ngrams = get_char_ngrams(query)\n        if not query_ngrams:\n            return [{**chunk, \"score\": 0.0} for chunk in self.chunks[:k]]\n            \n        scored_chunks = []\n        for idx, chunk in enumerate(self.chunks):\n            chunk_ng = self.chunk_ngrams[idx]\n            score = cosine_similarity(query_ngrams, chunk_ng)\n            scored_chunks.append((score, chunk))\n            \n        scored_chunks.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in scored_chunks[:k]:\n            results.append({**chunk, \"score\": score})\n        return results\n\n    def hybrid_search(self, query: str, k: int = 5, alpha: float = 0.5, method: str = \"linear\") -> list[dict]:\n        start_time = datetime.now(timezone.utc)\n        if self.current_trace_id is None:\n            self.current_trace_id = uuid.uuid4().hex\n            \n        if not self.chunks:\n            return []\n            \n        if method == \"linear\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_scores = {r[\"id\"]: r[\"score\"] for r in sparse_res}\n            dense_scores = {r[\"id\"]: r[\"score\"] for r in dense_res}\n            \n            s_min = min(sparse_scores.values()) if sparse_scores else 0.0\n            s_max = max(sparse_scores.values()) if sparse_scores else 0.0\n            d_min = min(dense_scores.values()) if dense_scores else 0.0\n            d_max = max(dense_scores.values()) if dense_scores else 0.0\n            \n            def norm(val, v_min, v_max):\n                if v_max > v_min:\n                    return (val - v_min) / (v_max - v_min)\n                return 0.0\n                \n            combined = []\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_score = norm(sparse_scores.get(c_id, 0.0), s_min, s_max)\n                d_score = norm(dense_scores.get(c_id, 0.0), d_min, d_max)\n                score = alpha * s_score + (1.0 - alpha) * d_score\n                combined.append((score, chunk))\n        elif method == \"rrf\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(sparse_res)}\n            dense_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(dense_res)}\n            \n            combined = []\n            constant = 60.0\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_rank = sparse_ranks.get(c_id)\n                d_rank = dense_ranks.get(c_id)\n                \n                s_rrf = 1.0 / (constant + s_rank) if s_rank is not None else 0.0\n                d_rrf = 1.0 / (constant + d_rank) if d_rank is not None else 0.0\n                score = s_rrf + d_rrf\n                combined.append((score, chunk))\n        else:\n            raise ValueError(f\"Unknown fusion method: {method}\")\n            \n        combined.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in combined[:k]:\n            results.append({**chunk, \"score\": score})\n            \n        end_time = datetime.now(timezone.utc)\n        duration_ms = (end_time - start_time).total_seconds() * 1000.0\n        span = {\n            \"span_id\": uuid.uuid4().hex[:16],\n            \"trace_id\": self.current_trace_id,\n            \"parent_span_id\": \"N/A\",\n            \"name\": \"hybrid_search\",\n            \"start_time\": start_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"end_time\": end_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"duration_ms\": round(duration_ms, 4),\n            \"service_name\": \"rag\",\n            \"status\": \"ok\",\n            \"attributes\": {\n                \"query\": query,\n                \"k\": k,\n                \"alpha\": alpha,\n                \"method\": method\n            }\n        }\n        self.last_spans.append(span)\n        return results\n\n    def rerank(\n        self,\n        query: str,\n        chunks: list[dict],\n        k: int = 5,\n        name_boost: float = 0.2,\n        type_boosts: dict[str, float] | None = None\n    ) -> list[dict]:\n        start_time = datetime.now(timezone.utc)\n        if self.current_trace_id is None:\n            self.current_trace_id = uuid.uuid4().hex\n            \n        if type_boosts is None:\n            type_boosts = {\"class\": 0.1, \"function\": 0.05}\n            \n        query_tokens = tokenize(query)\n        boosted_chunks = []\n        \n        for chunk in chunks:\n            base_score = chunk.get(\"score\", 0.0)\n            boost = 0.0\n            \n            chunk_name = chunk.get(\"name\", \"\")\n            if chunk_name:\n                chunk_name_lower = chunk_name.lower()\n                for token in query_tokens:\n                    if len(token) >= 3 and token == chunk_name_lower:\n                        boost += name_boost\n                        break\n                        \n            chunk_type = chunk.get(\"type\", \"\")\n            boost += type_boosts.get(chunk_type, 0.0)\n            \n            new_score = base_score + boost\n            boosted_chunks.append({**chunk, \"score\": new_score})\n            \n        boosted_chunks.sort(key=lambda x: x[\"score\"], reverse=True)\n        \n        end_time = datetime.now(timezone.utc)\n        duration_ms = (end_time - start_time).total_seconds() * 1000.0\n        \n        parent_id = \"N/A\"\n        if self.last_spans:\n            for span in reversed(self.last_spans):\n                if span[\"trace_id\"] == self.current_trace_id and span[\"name\"] == \"hybrid_search\":\n                    parent_id = span[\"span_id\"]\n                    break\n                    \n        span = {\n            \"span_id\": uuid.uuid4().hex[:16],\n            \"trace_id\": self.current_trace_id,\n            \"parent_span_id\": parent_id,\n            \"name\": \"rerank_chunks\",\n            \"start_time\": start_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"end_time\": end_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"duration_ms\": round(duration_ms, 4),\n            \"service_name\": \"rag\",\n            \"status\": \"ok\",\n            \"attributes\": {\n                \"query\": query,\n                \"k\": k,\n                \"input_chunks_count\": len(chunks)\n            }\n        }\n        self.last_spans.append(span)\n        return boosted_chunks[:k]",
+      "tokens": 2222
     },
     {
-      "id": "chunk_c47e38b8___init__",
+      "id": "chunk_b8d18580___init__",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "__init__",
-      "start_line": 30,
-      "end_line": 40,
-      "content": "    def __init__(self, index_data: dict | str | Path):\n        if isinstance(index_data, (str, Path)):\n            with open(index_data, \"r\", encoding=\"utf-8\") as f:\n                self.index_data = json.load(f)\n        else:\n            self.index_data = index_data\n        \n        self.chunks = self.index_data.get(\"chunks\", [])\n        self.N = len(self.chunks)\n        self._prepare_sparse()\n        self._prepare_dense()",
-      "tokens": 96
+      "start_line": 32,
+      "end_line": 44,
+      "content": "    def __init__(self, index_data: dict | str | Path):\n        if isinstance(index_data, (str, Path)):\n            with open(index_data, \"r\", encoding=\"utf-8\") as f:\n                self.index_data = json.load(f)\n        else:\n            self.index_data = index_data\n        \n        self.chunks = self.index_data.get(\"chunks\", [])\n        self.N = len(self.chunks)\n        self._prepare_sparse()\n        self._prepare_dense()\n        self.last_spans: list[dict] = []\n        self.current_trace_id: str | None = None",
+      "tokens": 118
     },
     {
-      "id": "chunk_f1cf812e__prepare_sparse",
+      "id": "chunk_26651dd2_reset_trace",
+      "filepath": "rag/search.py",
+      "type": "function",
+      "name": "reset_trace",
+      "start_line": 46,
+      "end_line": 48,
+      "content": "    def reset_trace(self) -> None:\n        self.current_trace_id = None\n        self.last_spans = []",
+      "tokens": 23
+    },
+    {
+      "id": "chunk_92d53702__prepare_sparse",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "_prepare_sparse",
-      "start_line": 42,
-      "end_line": 60,
+      "start_line": 50,
+      "end_line": 68,
       "content": "    def _prepare_sparse(self) -> None:\n        self.df = Counter()\n        self.chunk_tfs = []\n        \n        for chunk in self.chunks:\n            content = chunk.get(\"content\", \"\")\n            tokens = tokenize(content)\n            token_counts = Counter(tokens)\n            \n            total_tokens = len(tokens)\n            tf = {}\n            for token, count in token_counts.items():\n                tf[token] = count / total_tokens if total_tokens > 0 else 0.0\n                self.df[token] += 1\n            self.chunk_tfs.append(tf)\n            \n        self.idf = {}\n        for token, df_val in self.df.items():\n            self.idf[token] = math.log(1.0 + self.N / df_val)",
       "tokens": 191
     },
     {
-      "id": "chunk_ab6162a3__prepare_dense",
+      "id": "chunk_fb0a7dcf__prepare_dense",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "_prepare_dense",
-      "start_line": 62,
-      "end_line": 66,
+      "start_line": 70,
+      "end_line": 74,
       "content": "    def _prepare_dense(self) -> None:\n        self.chunk_ngrams = []\n        for chunk in self.chunks:\n            content = chunk.get(\"content\", \"\")\n            self.chunk_ngrams.append(get_char_ngrams(content))",
       "tokens": 43
     },
     {
-      "id": "chunk_6dde2c82_sparse_search",
+      "id": "chunk_b8b63c32_sparse_search",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "sparse_search",
-      "start_line": 68,
-      "end_line": 83,
+      "start_line": 76,
+      "end_line": 91,
       "content": "    def sparse_search(self, query: str, k: int = 5) -> list[dict]:\n        query_tokens = tokenize(query)\n        if not query_tokens:\n            return [{**chunk, \"score\": 0.0} for chunk in self.chunks[:k]]\n            \n        scored_chunks = []\n        for idx, chunk in enumerate(self.chunks):\n            tf = self.chunk_tfs[idx]\n            score = sum(tf.get(token, 0.0) * self.idf.get(token, 0.0) for token in query_tokens)\n            scored_chunks.append((score, chunk))\n            \n        scored_chunks.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in scored_chunks[:k]:\n            results.append({**chunk, \"score\": score})\n        return results",
       "tokens": 166
     },
     {
-      "id": "chunk_6ff3c494_dense_search",
+      "id": "chunk_98a8d458_dense_search",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "dense_search",
-      "start_line": 85,
-      "end_line": 100,
+      "start_line": 93,
+      "end_line": 108,
       "content": "    def dense_search(self, query: str, k: int = 5) -> list[dict]:\n        query_ngrams = get_char_ngrams(query)\n        if not query_ngrams:\n            return [{**chunk, \"score\": 0.0} for chunk in self.chunks[:k]]\n            \n        scored_chunks = []\n        for idx, chunk in enumerate(self.chunks):\n            chunk_ng = self.chunk_ngrams[idx]\n            score = cosine_similarity(query_ngrams, chunk_ng)\n            scored_chunks.append((score, chunk))\n            \n        scored_chunks.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in scored_chunks[:k]:\n            results.append({**chunk, \"score\": score})\n        return results",
       "tokens": 156
     },
     {
-      "id": "chunk_0863a280_hybrid_search",
+      "id": "chunk_d1542976_hybrid_search",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "hybrid_search",
-      "start_line": 102,
-      "end_line": 155,
-      "content": "    def hybrid_search(self, query: str, k: int = 5, alpha: float = 0.5, method: str = \"linear\") -> list[dict]:\n        if not self.chunks:\n            return []\n            \n        if method == \"linear\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_scores = {r[\"id\"]: r[\"score\"] for r in sparse_res}\n            dense_scores = {r[\"id\"]: r[\"score\"] for r in dense_res}\n            \n            s_min = min(sparse_scores.values()) if sparse_scores else 0.0\n            s_max = max(sparse_scores.values()) if sparse_scores else 0.0\n            d_min = min(dense_scores.values()) if dense_scores else 0.0\n            d_max = max(dense_scores.values()) if dense_scores else 0.0\n            \n            def norm(val, v_min, v_max):\n                if v_max > v_min:\n                    return (val - v_min) / (v_max - v_min)\n                return 0.0\n                \n            combined = []\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_score = norm(sparse_scores.get(c_id, 0.0), s_min, s_max)\n                d_score = norm(dense_scores.get(c_id, 0.0), d_min, d_max)\n                score = alpha * s_score + (1.0 - alpha) * d_score\n                combined.append((score, chunk))\n        elif method == \"rrf\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(sparse_res)}\n            dense_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(dense_res)}\n            \n            combined = []\n            constant = 60.0\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_rank = sparse_ranks.get(c_id)\n                d_rank = dense_ranks.get(c_id)\n                \n                s_rrf = 1.0 / (constant + s_rank) if s_rank is not None else 0.0\n                d_rrf = 1.0 / (constant + d_rank) if d_rank is not None else 0.0\n                score = s_rrf + d_rrf\n                combined.append((score, chunk))\n        else:\n            raise ValueError(f\"Unknown fusion method: {method}\")\n            \n        combined.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in combined[:k]:\n            results.append({**chunk, \"score\": score})\n        return results",
-      "tokens": 682
+      "start_line": 110,
+      "end_line": 188,
+      "content": "    def hybrid_search(self, query: str, k: int = 5, alpha: float = 0.5, method: str = \"linear\") -> list[dict]:\n        start_time = datetime.now(timezone.utc)\n        if self.current_trace_id is None:\n            self.current_trace_id = uuid.uuid4().hex\n            \n        if not self.chunks:\n            return []\n            \n        if method == \"linear\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_scores = {r[\"id\"]: r[\"score\"] for r in sparse_res}\n            dense_scores = {r[\"id\"]: r[\"score\"] for r in dense_res}\n            \n            s_min = min(sparse_scores.values()) if sparse_scores else 0.0\n            s_max = max(sparse_scores.values()) if sparse_scores else 0.0\n            d_min = min(dense_scores.values()) if dense_scores else 0.0\n            d_max = max(dense_scores.values()) if dense_scores else 0.0\n            \n            def norm(val, v_min, v_max):\n                if v_max > v_min:\n                    return (val - v_min) / (v_max - v_min)\n                return 0.0\n                \n            combined = []\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_score = norm(sparse_scores.get(c_id, 0.0), s_min, s_max)\n                d_score = norm(dense_scores.get(c_id, 0.0), d_min, d_max)\n                score = alpha * s_score + (1.0 - alpha) * d_score\n                combined.append((score, chunk))\n        elif method == \"rrf\":\n            sparse_res = self.sparse_search(query, k=len(self.chunks))\n            dense_res = self.dense_search(query, k=len(self.chunks))\n            \n            sparse_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(sparse_res)}\n            dense_ranks = {r[\"id\"]: i + 1 for i, r in enumerate(dense_res)}\n            \n            combined = []\n            constant = 60.0\n            for chunk in self.chunks:\n                c_id = chunk[\"id\"]\n                s_rank = sparse_ranks.get(c_id)\n                d_rank = dense_ranks.get(c_id)\n                \n                s_rrf = 1.0 / (constant + s_rank) if s_rank is not None else 0.0\n                d_rrf = 1.0 / (constant + d_rank) if d_rank is not None else 0.0\n                score = s_rrf + d_rrf\n                combined.append((score, chunk))\n        else:\n            raise ValueError(f\"Unknown fusion method: {method}\")\n            \n        combined.sort(key=lambda x: x[0], reverse=True)\n        results = []\n        for score, chunk in combined[:k]:\n            results.append({**chunk, \"score\": score})\n            \n        end_time = datetime.now(timezone.utc)\n        duration_ms = (end_time - start_time).total_seconds() * 1000.0\n        span = {\n            \"span_id\": uuid.uuid4().hex[:16],\n            \"trace_id\": self.current_trace_id,\n            \"parent_span_id\": \"N/A\",\n            \"name\": \"hybrid_search\",\n            \"start_time\": start_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"end_time\": end_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"duration_ms\": round(duration_ms, 4),\n            \"service_name\": \"rag\",\n            \"status\": \"ok\",\n            \"attributes\": {\n                \"query\": query,\n                \"k\": k,\n                \"alpha\": alpha,\n                \"method\": method\n            }\n        }\n        self.last_spans.append(span)\n        return results",
+      "tokens": 900
     },
     {
-      "id": "chunk_17227c3c_rerank",
+      "id": "chunk_deaee18f_rerank",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "rerank",
-      "start_line": 157,
-      "end_line": 190,
-      "content": "    def rerank(\n        self,\n        query: str,\n        chunks: list[dict],\n        k: int = 5,\n        name_boost: float = 0.2,\n        type_boosts: dict[str, float] | None = None\n    ) -> list[dict]:\n        if type_boosts is None:\n            type_boosts = {\"class\": 0.1, \"function\": 0.05}\n            \n        query_tokens = tokenize(query)\n        boosted_chunks = []\n        \n        for chunk in chunks:\n            base_score = chunk.get(\"score\", 0.0)\n            boost = 0.0\n            \n            chunk_name = chunk.get(\"name\", \"\")\n            if chunk_name:\n                chunk_name_lower = chunk_name.lower()\n                for token in query_tokens:\n                    if len(token) >= 3 and token == chunk_name_lower:\n                        boost += name_boost\n                        break\n                        \n            chunk_type = chunk.get(\"type\", \"\")\n            boost += type_boosts.get(chunk_type, 0.0)\n            \n            new_score = base_score + boost\n            boosted_chunks.append({**chunk, \"score\": new_score})\n            \n        boosted_chunks.sort(key=lambda x: x[\"score\"], reverse=True)\n        return boosted_chunks[:k]",
-      "tokens": 330
+      "start_line": 190,
+      "end_line": 255,
+      "content": "    def rerank(\n        self,\n        query: str,\n        chunks: list[dict],\n        k: int = 5,\n        name_boost: float = 0.2,\n        type_boosts: dict[str, float] | None = None\n    ) -> list[dict]:\n        start_time = datetime.now(timezone.utc)\n        if self.current_trace_id is None:\n            self.current_trace_id = uuid.uuid4().hex\n            \n        if type_boosts is None:\n            type_boosts = {\"class\": 0.1, \"function\": 0.05}\n            \n        query_tokens = tokenize(query)\n        boosted_chunks = []\n        \n        for chunk in chunks:\n            base_score = chunk.get(\"score\", 0.0)\n            boost = 0.0\n            \n            chunk_name = chunk.get(\"name\", \"\")\n            if chunk_name:\n                chunk_name_lower = chunk_name.lower()\n                for token in query_tokens:\n                    if len(token) >= 3 and token == chunk_name_lower:\n                        boost += name_boost\n                        break\n                        \n            chunk_type = chunk.get(\"type\", \"\")\n            boost += type_boosts.get(chunk_type, 0.0)\n            \n            new_score = base_score + boost\n            boosted_chunks.append({**chunk, \"score\": new_score})\n            \n        boosted_chunks.sort(key=lambda x: x[\"score\"], reverse=True)\n        \n        end_time = datetime.now(timezone.utc)\n        duration_ms = (end_time - start_time).total_seconds() * 1000.0\n        \n        parent_id = \"N/A\"\n        if self.last_spans:\n            for span in reversed(self.last_spans):\n                if span[\"trace_id\"] == self.current_trace_id and span[\"name\"] == \"hybrid_search\":\n                    parent_id = span[\"span_id\"]\n                    break\n                    \n        span = {\n            \"span_id\": uuid.uuid4().hex[:16],\n            \"trace_id\": self.current_trace_id,\n            \"parent_span_id\": parent_id,\n            \"name\": \"rerank_chunks\",\n            \"start_time\": start_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"end_time\": end_time.isoformat().replace(\"+00:00\", \"Z\"),\n            \"duration_ms\": round(duration_ms, 4),\n            \"service_name\": \"rag\",\n            \"status\": \"ok\",\n            \"attributes\": {\n                \"query\": query,\n                \"k\": k,\n                \"input_chunks_count\": len(chunks)\n            }\n        }\n        self.last_spans.append(span)\n        return boosted_chunks[:k]",
+      "tokens": 620
     },
     {
-      "id": "chunk_aef34c13_norm",
+      "id": "chunk_8ac8cd0e_norm",
       "filepath": "rag/search.py",
       "type": "function",
       "name": "norm",
-      "start_line": 118,
-      "end_line": 121,
+      "start_line": 130,
+      "end_line": 133,
       "content": "            def norm(val, v_min, v_max):\n                if v_max > v_min:\n                    return (val - v_min) / (v_max - v_min)\n                return 0.0",
       "tokens": 57
     }
