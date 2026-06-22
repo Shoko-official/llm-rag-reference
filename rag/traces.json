@@ -1,0 +1,200 @@
+[
+  {
+    "span_id": "836a75e51ec6425b",
+    "trace_id": "202be789351644f191cae5685f9db9c4",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-22T18:36:28.660977Z",
+    "end_time": "2026-06-22T18:36:28.661977Z",
+    "duration_ms": 1.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "ASTChunker class",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "f92fe37cfb0746a5",
+    "trace_id": "202be789351644f191cae5685f9db9c4",
+    "parent_span_id": "836a75e51ec6425b",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-22T18:36:28.661977Z",
+    "end_time": "2026-06-22T18:36:28.661977Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "ASTChunker class",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "a3520590d60d46d2",
+    "trace_id": "f6d904b773144795afae274a87d76ba1",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-22T18:36:28.661977Z",
+    "end_time": "2026-06-22T18:36:28.661977Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "estimate token count",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "97a04ed956054e21",
+    "trace_id": "f6d904b773144795afae274a87d76ba1",
+    "parent_span_id": "a3520590d60d46d2",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-22T18:36:28.661977Z",
+    "end_time": "2026-06-22T18:36:28.661977Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "estimate token count",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "d76824b793f147ea",
+    "trace_id": "2383f9eb479f4d6dace784f09c35459e",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-22T18:36:28.661977Z",
+    "end_time": "2026-06-22T18:36:28.662978Z",
+    "duration_ms": 1.001,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "HybridSearcher class constructor",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "1c03a9d35ed24194",
+    "trace_id": "2383f9eb479f4d6dace784f09c35459e",
+    "parent_span_id": "d76824b793f147ea",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-22T18:36:28.662978Z",
+    "end_time": "2026-06-22T18:36:28.662978Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "HybridSearcher class constructor",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "895dda2b52654e0f",
+    "trace_id": "612c25ed817e4c0fb0968d193d137b79",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-22T18:36:28.662978Z",
+    "end_time": "2026-06-22T18:36:28.662978Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "tokenize text query lower case",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "a26d80aaae9940ae",
+    "trace_id": "612c25ed817e4c0fb0968d193d137b79",
+    "parent_span_id": "895dda2b52654e0f",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-22T18:36:28.662978Z",
+    "end_time": "2026-06-22T18:36:28.662978Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "tokenize text query lower case",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "75d625099bd8444c",
+    "trace_id": "8c5e36741da34a8e89f4f4350c78ec5b",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-22T18:36:28.662978Z",
+    "end_time": "2026-06-22T18:36:28.662978Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "Reciprocal Rank Fusion hybrid",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "ae169e4824ba4a86",
+    "trace_id": "8c5e36741da34a8e89f4f4350c78ec5b",
+    "parent_span_id": "75d625099bd8444c",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-22T18:36:28.662978Z",
+    "end_time": "2026-06-22T18:36:28.662978Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "Reciprocal Rank Fusion hybrid",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "519c3d6ebe494cb2",
+    "trace_id": "899e2f20e2514b819f58cb38ce896714",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-22T18:36:28.662978Z",
+    "end_time": "2026-06-22T18:36:28.663978Z",
+    "duration_ms": 1.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "cosine similarity calculation vectors",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "92b6b0d0072c43d4",
+    "trace_id": "899e2f20e2514b819f58cb38ce896714",
+    "parent_span_id": "519c3d6ebe494cb2",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-22T18:36:28.663978Z",
+    "end_time": "2026-06-22T18:36:28.663978Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "cosine similarity calculation vectors",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  }
+]
