@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import math
 import re
+import uuid
+from datetime import datetime, timezone
 from collections import Counter
 from pathlib import Path
 
@@ -38,6 +40,12 @@ class HybridSearcher:
         self.N = len(self.chunks)
         self._prepare_sparse()
         self._prepare_dense()
+        self.last_spans: list[dict] = []
+        self.current_trace_id: str | None = None
+
+    def reset_trace(self) -> None:
+        self.current_trace_id = None
+        self.last_spans = []
 
     def _prepare_sparse(self) -> None:
         self.df = Counter()
@@ -100,6 +108,10 @@ class HybridSearcher:
         return results
 
     def hybrid_search(self, query: str, k: int = 5, alpha: float = 0.5, method: str = "linear") -> list[dict]:
+        start_time = datetime.now(timezone.utc)
+        if self.current_trace_id is None:
+            self.current_trace_id = uuid.uuid4().hex
+            
         if not self.chunks:
             return []
             
@@ -152,6 +164,27 @@ class HybridSearcher:
         results = []
         for score, chunk in combined[:k]:
             results.append({**chunk, "score": score})
+            
+        end_time = datetime.now(timezone.utc)
+        duration_ms = (end_time - start_time).total_seconds() * 1000.0
+        span = {
+            "span_id": uuid.uuid4().hex[:16],
+            "trace_id": self.current_trace_id,
+            "parent_span_id": "N/A",
+            "name": "hybrid_search",
+            "start_time": start_time.isoformat().replace("+00:00", "Z"),
+            "end_time": end_time.isoformat().replace("+00:00", "Z"),
+            "duration_ms": round(duration_ms, 4),
+            "service_name": "rag",
+            "status": "ok",
+            "attributes": {
+                "query": query,
+                "k": k,
+                "alpha": alpha,
+                "method": method
+            }
+        }
+        self.last_spans.append(span)
         return results
 
     def rerank(
@@ -162,6 +195,10 @@ class HybridSearcher:
         name_boost: float = 0.2,
         type_boosts: dict[str, float] | None = None
     ) -> list[dict]:
+        start_time = datetime.now(timezone.utc)
+        if self.current_trace_id is None:
+            self.current_trace_id = uuid.uuid4().hex
+            
         if type_boosts is None:
             type_boosts = {"class": 0.1, "function": 0.05}
             
@@ -187,4 +224,32 @@ class HybridSearcher:
             boosted_chunks.append({**chunk, "score": new_score})
             
         boosted_chunks.sort(key=lambda x: x["score"], reverse=True)
+        
+        end_time = datetime.now(timezone.utc)
+        duration_ms = (end_time - start_time).total_seconds() * 1000.0
+        
+        parent_id = "N/A"
+        if self.last_spans:
+            for span in reversed(self.last_spans):
+                if span["trace_id"] == self.current_trace_id and span["name"] == "hybrid_search":
+                    parent_id = span["span_id"]
+                    break
+                    
+        span = {
+            "span_id": uuid.uuid4().hex[:16],
+            "trace_id": self.current_trace_id,
+            "parent_span_id": parent_id,
+            "name": "rerank_chunks",
+            "start_time": start_time.isoformat().replace("+00:00", "Z"),
+            "end_time": end_time.isoformat().replace("+00:00", "Z"),
+            "duration_ms": round(duration_ms, 4),
+            "service_name": "rag",
+            "status": "ok",
+            "attributes": {
+                "query": query,
+                "k": k,
+                "input_chunks_count": len(chunks)
+            }
+        }
+        self.last_spans.append(span)
         return boosted_chunks[:k]
