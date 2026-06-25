@@ -1,12 +1,12 @@
 [
   {
-    "span_id": "836a75e51ec6425b",
-    "trace_id": "202be789351644f191cae5685f9db9c4",
+    "span_id": "1273881bccc042dd",
+    "trace_id": "94af4927167d476dbbfc36d8795a670f",
     "parent_span_id": "N/A",
     "name": "hybrid_search",
-    "start_time": "2026-06-22T18:36:28.660977Z",
-    "end_time": "2026-06-22T18:36:28.661977Z",
-    "duration_ms": 1.0,
+    "start_time": "2026-06-25T22:10:51.786073Z",
+    "end_time": "2026-06-25T22:10:51.787076Z",
+    "duration_ms": 1.003,
     "service_name": "rag",
     "status": "ok",
     "attributes": {
@@ -17,12 +17,12 @@
     }
   },
   {
-    "span_id": "f92fe37cfb0746a5",
-    "trace_id": "202be789351644f191cae5685f9db9c4",
-    "parent_span_id": "836a75e51ec6425b",
+    "span_id": "a71679b3898f40c7",
+    "trace_id": "94af4927167d476dbbfc36d8795a670f",
+    "parent_span_id": "1273881bccc042dd",
     "name": "rerank_chunks",
-    "start_time": "2026-06-22T18:36:28.661977Z",
-    "end_time": "2026-06-22T18:36:28.661977Z",
+    "start_time": "2026-06-25T22:10:51.787076Z",
+    "end_time": "2026-06-25T22:10:51.787076Z",
     "duration_ms": 0.0,
     "service_name": "rag",
     "status": "ok",
@@ -33,12 +33,12 @@
     }
   },
   {
-    "span_id": "a3520590d60d46d2",
-    "trace_id": "f6d904b773144795afae274a87d76ba1",
+    "span_id": "38e137c326bc49a0",
+    "trace_id": "28dea63859be4243a4810b4ab30bc855",
     "parent_span_id": "N/A",
     "name": "hybrid_search",
-    "start_time": "2026-06-22T18:36:28.661977Z",
-    "end_time": "2026-06-22T18:36:28.661977Z",
+    "start_time": "2026-06-25T22:10:51.787076Z",
+    "end_time": "2026-06-25T22:10:51.787076Z",
     "duration_ms": 0.0,
     "service_name": "rag",
     "status": "ok",
@@ -50,12 +50,12 @@
     }
   },
   {
-    "span_id": "97a04ed956054e21",
-    "trace_id": "f6d904b773144795afae274a87d76ba1",
-    "parent_span_id": "a3520590d60d46d2",
+    "span_id": "66595de012b64f88",
+    "trace_id": "28dea63859be4243a4810b4ab30bc855",
+    "parent_span_id": "38e137c326bc49a0",
     "name": "rerank_chunks",
-    "start_time": "2026-06-22T18:36:28.661977Z",
-    "end_time": "2026-06-22T18:36:28.661977Z",
+    "start_time": "2026-06-25T22:10:51.787076Z",
+    "end_time": "2026-06-25T22:10:51.787076Z",
     "duration_ms": 0.0,
     "service_name": "rag",
     "status": "ok",
@@ -66,112 +66,112 @@
     }
   },
   {
-    "span_id": "d76824b793f147ea",
-    "trace_id": "2383f9eb479f4d6dace784f09c35459e",
+    "span_id": "37320196034d4b13",
+    "trace_id": "f5cfb06b663b48de80a05e6e0be6c664",
     "parent_span_id": "N/A",
     "name": "hybrid_search",
-    "start_time": "2026-06-22T18:36:28.661977Z",
-    "end_time": "2026-06-22T18:36:28.662978Z",
-    "duration_ms": 1.001,
-    "service_name": "rag",
-    "status": "ok",
-    "attributes": {
-      "query": "HybridSearcher class constructor",
-      "k": 5,
-      "alpha": 0.5,
-      "method": "linear"
-    }
-  },
-  {
-    "span_id": "1c03a9d35ed24194",
-    "trace_id": "2383f9eb479f4d6dace784f09c35459e",
-    "parent_span_id": "d76824b793f147ea",
-    "name": "rerank_chunks",
-    "start_time": "2026-06-22T18:36:28.662978Z",
-    "end_time": "2026-06-22T18:36:28.662978Z",
-    "duration_ms": 0.0,
-    "service_name": "rag",
-    "status": "ok",
-    "attributes": {
-      "query": "HybridSearcher class constructor",
-      "k": 5,
-      "input_chunks_count": 5
-    }
-  },
-  {
-    "span_id": "895dda2b52654e0f",
-    "trace_id": "612c25ed817e4c0fb0968d193d137b79",
-    "parent_span_id": "N/A",
-    "name": "hybrid_search",
-    "start_time": "2026-06-22T18:36:28.662978Z",
-    "end_time": "2026-06-22T18:36:28.662978Z",
-    "duration_ms": 0.0,
-    "service_name": "rag",
-    "status": "ok",
-    "attributes": {
-      "query": "tokenize text query lower case",
-      "k": 5,
-      "alpha": 0.5,
-      "method": "linear"
-    }
-  },
-  {
-    "span_id": "a26d80aaae9940ae",
-    "trace_id": "612c25ed817e4c0fb0968d193d137b79",
-    "parent_span_id": "895dda2b52654e0f",
-    "name": "rerank_chunks",
-    "start_time": "2026-06-22T18:36:28.662978Z",
-    "end_time": "2026-06-22T18:36:28.662978Z",
-    "duration_ms": 0.0,
-    "service_name": "rag",
-    "status": "ok",
-    "attributes": {
-      "query": "tokenize text query lower case",
-      "k": 5,
-      "input_chunks_count": 5
-    }
-  },
-  {
-    "span_id": "75d625099bd8444c",
-    "trace_id": "8c5e36741da34a8e89f4f4350c78ec5b",
-    "parent_span_id": "N/A",
-    "name": "hybrid_search",
-    "start_time": "2026-06-22T18:36:28.662978Z",
-    "end_time": "2026-06-22T18:36:28.662978Z",
-    "duration_ms": 0.0,
-    "service_name": "rag",
-    "status": "ok",
-    "attributes": {
-      "query": "Reciprocal Rank Fusion hybrid",
-      "k": 5,
-      "alpha": 0.5,
-      "method": "linear"
-    }
-  },
-  {
-    "span_id": "ae169e4824ba4a86",
-    "trace_id": "8c5e36741da34a8e89f4f4350c78ec5b",
-    "parent_span_id": "75d625099bd8444c",
-    "name": "rerank_chunks",
-    "start_time": "2026-06-22T18:36:28.662978Z",
-    "end_time": "2026-06-22T18:36:28.662978Z",
-    "duration_ms": 0.0,
-    "service_name": "rag",
-    "status": "ok",
-    "attributes": {
-      "query": "Reciprocal Rank Fusion hybrid",
-      "k": 5,
-      "input_chunks_count": 5
-    }
-  },
-  {
-    "span_id": "519c3d6ebe494cb2",
-    "trace_id": "899e2f20e2514b819f58cb38ce896714",
-    "parent_span_id": "N/A",
-    "name": "hybrid_search",
-    "start_time": "2026-06-22T18:36:28.662978Z",
-    "end_time": "2026-06-22T18:36:28.663978Z",
+    "start_time": "2026-06-25T22:10:51.787076Z",
+    "end_time": "2026-06-25T22:10:51.788076Z",
     "duration_ms": 1.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "HybridSearcher class constructor",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "316c4285a15447ef",
+    "trace_id": "f5cfb06b663b48de80a05e6e0be6c664",
+    "parent_span_id": "37320196034d4b13",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-25T22:10:51.788076Z",
+    "end_time": "2026-06-25T22:10:51.788076Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "HybridSearcher class constructor",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "37dd80f5f7094dbc",
+    "trace_id": "47d18078a71d441582f3d676556b90e0",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-25T22:10:51.788076Z",
+    "end_time": "2026-06-25T22:10:51.788578Z",
+    "duration_ms": 0.502,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "tokenize text query lower case",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "53f365fd81a242a9",
+    "trace_id": "47d18078a71d441582f3d676556b90e0",
+    "parent_span_id": "37dd80f5f7094dbc",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-25T22:10:51.788578Z",
+    "end_time": "2026-06-25T22:10:51.788578Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "tokenize text query lower case",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "e3c2980a5a4542cd",
+    "trace_id": "41f2d66f8b7f4bf18dc57574d1cdb26e",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-25T22:10:51.788578Z",
+    "end_time": "2026-06-25T22:10:51.789582Z",
+    "duration_ms": 1.004,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "Reciprocal Rank Fusion hybrid",
+      "k": 5,
+      "alpha": 0.5,
+      "method": "linear"
+    }
+  },
+  {
+    "span_id": "72b9597deb034b0e",
+    "trace_id": "41f2d66f8b7f4bf18dc57574d1cdb26e",
+    "parent_span_id": "e3c2980a5a4542cd",
+    "name": "rerank_chunks",
+    "start_time": "2026-06-25T22:10:51.789582Z",
+    "end_time": "2026-06-25T22:10:51.789582Z",
+    "duration_ms": 0.0,
+    "service_name": "rag",
+    "status": "ok",
+    "attributes": {
+      "query": "Reciprocal Rank Fusion hybrid",
+      "k": 5,
+      "input_chunks_count": 5
+    }
+  },
+  {
+    "span_id": "bff91d2e1b904d1f",
+    "trace_id": "efbed99251b64fd2899c2f7ad2911f75",
+    "parent_span_id": "N/A",
+    "name": "hybrid_search",
+    "start_time": "2026-06-25T22:10:51.789582Z",
+    "end_time": "2026-06-25T22:10:51.789582Z",
+    "duration_ms": 0.0,
     "service_name": "rag",
     "status": "ok",
     "attributes": {
@@ -182,12 +182,12 @@
     }
   },
   {
-    "span_id": "92b6b0d0072c43d4",
-    "trace_id": "899e2f20e2514b819f58cb38ce896714",
-    "parent_span_id": "519c3d6ebe494cb2",
+    "span_id": "6ef2f2f82e9449be",
+    "trace_id": "efbed99251b64fd2899c2f7ad2911f75",
+    "parent_span_id": "bff91d2e1b904d1f",
     "name": "rerank_chunks",
-    "start_time": "2026-06-22T18:36:28.663978Z",
-    "end_time": "2026-06-22T18:36:28.663978Z",
+    "start_time": "2026-06-25T22:10:51.789582Z",
+    "end_time": "2026-06-25T22:10:51.789582Z",
     "duration_ms": 0.0,
     "service_name": "rag",
     "status": "ok",
